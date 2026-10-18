@@ -50,12 +50,16 @@ for (const line of lines) {
 
   if (!city || isNaN(lat) || isNaN(lng)) continue
 
-  cities.push({ city, state_id, lat, lng })
+  cities.push({ city, state_id, lat, lng, pop })
 }
 
-cities.sort((a, b) => a.city.localeCompare(b.city))
+// Sort by population descending so Fuse.js prefers larger cities in tie-breaks
+cities.sort((a, b) => b.pop - a.pop)
 
-console.log(`Writing ${cities.length} cities to usCities.json...`)
-fs.writeFileSync(OUTPUT, JSON.stringify(cities))
+// Strip population from output (not needed at runtime)
+const output = cities.map(({ city, state_id, lat, lng }) => ({ city, state_id, lat, lng }))
+
+console.log(`Writing ${output.length} cities to usCities.json...`)
+fs.writeFileSync(OUTPUT, JSON.stringify(output))
 const sizeMb = (fs.statSync(OUTPUT).size / 1024 / 1024).toFixed(2)
 console.log(`Done! File size: ${sizeMb} MB`)

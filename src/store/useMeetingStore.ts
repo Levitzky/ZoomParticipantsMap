@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import type { Meeting, Participant, Template } from '@/types'
+import type { Meeting, Participant, Template, TemplatePatch } from '@/types'
 import { resolveLocation } from '@/utils/geocode'
+import { mergeTemplate } from '@/utils/deepMerge'
 
 export type AppScreen = 'setup' | 'presentation' | 'template-editor'
 
@@ -12,6 +13,7 @@ interface MeetingState {
   setScreen: (screen: AppScreen) => void
   startMeeting: (name: string, template: Template) => void
   endMeeting: () => void
+  patchMeetingTemplate: (patch: TemplatePatch) => void
   addParticipant: (location: string, name?: string) => Promise<void>
   removeParticipant: (id: string) => void
   clearParticipants: () => void
@@ -41,6 +43,18 @@ export const useMeetingStore = create<MeetingState>()((set) => ({
 
   endMeeting() {
     set({ activeMeeting: null, screen: 'setup' })
+  },
+
+  patchMeetingTemplate(patch) {
+    set(s => {
+      if (!s.activeMeeting) return s
+      return {
+        activeMeeting: {
+          ...s.activeMeeting,
+          template: mergeTemplate(s.activeMeeting.template, patch),
+        },
+      }
+    })
   },
 
   async addParticipant(location, name) {

@@ -5,6 +5,7 @@ import { PresentationView } from '@/components/PresentationView'
 import { BUILTIN_TEMPLATES } from '@/config/builtinTemplates'
 import { BACKGROUND_GRADIENTS } from '@/config/backgroundPresets'
 import { exportTemplateJson, importTemplateJson } from '@/utils/templateExport'
+import { compressImage } from '@/utils/compressImage'
 import type { BackgroundPreset, AnimationStyle, HeaderPosition, LogoPosition } from '@/types'
 
 export function TemplateEditorScreen() {
@@ -118,19 +119,27 @@ export function TemplateEditorScreen() {
           {/* Background */}
           <Section title="Background">
             <label className="block text-xs text-slate-400 mb-1">Style</label>
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              {(['deep-space', 'navy-night', 'golden-hour'] as BackgroundPreset[]).map(p => (
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {([
+                ['deep-space', 'Deep Space'],
+                ['navy-night', 'Navy Night'],
+                ['golden-hour', 'Golden Hour'],
+                ['morning-light', 'Morning Light'],
+              ] as [BackgroundPreset, string][]).map(([p, label]) => (
                 <button
                   key={p}
                   onClick={() => updateDraft({ background: { type: 'preset', preset: p } })}
-                  className={`h-10 rounded-lg border transition-colors text-xs text-white ${
+                  className={`h-10 rounded-lg border transition-colors text-xs ${
                     draft.background.preset === p && draft.background.type === 'preset'
                       ? 'border-teal-400'
                       : 'border-slate-700 hover:border-slate-500'
                   }`}
-                  style={{ backgroundImage: BACKGROUND_GRADIENTS[p] }}
+                  style={{
+                    backgroundImage: BACKGROUND_GRADIENTS[p],
+                    color: p === 'morning-light' ? '#1e3a5f' : '#fff',
+                  }}
                 >
-                  {p === 'deep-space' ? 'Deep Space' : p === 'navy-night' ? 'Navy Night' : 'Golden Hour'}
+                  {label}
                 </button>
               ))}
             </div>
@@ -138,12 +147,11 @@ export function TemplateEditorScreen() {
             <input
               type="file"
               accept="image/*"
-              onChange={e => {
+              onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => updateDraft({ background: { type: 'custom', customImageDataUrl: ev.target?.result as string } })
-                reader.readAsDataURL(file)
+                const dataUrl = await compressImage(file)
+                updateDraft({ background: { type: 'custom', customImageDataUrl: dataUrl } })
               }}
               className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-slate-700 file:text-slate-300 mb-3"
             />
@@ -181,6 +189,24 @@ export function TemplateEditorScreen() {
             <ColorRow label="Subtitle color" value={draft.header.subtitleColor}
               onChange={v => updateDraft({ header: { subtitleColor: v } })} />
 
+            <label className="block text-xs text-slate-400 mt-3 mb-1">Font style</label>
+            <div className="flex gap-2 mb-3">
+              {(['sans', 'serif'] as const).map(f => (
+                <button key={f} onClick={() => updateDraft({ header: { fontStyle: f } })}
+                  className={`flex-1 py-1.5 text-xs rounded border transition-colors ${
+                    (draft.header.fontStyle ?? 'sans') === f ? 'border-teal-400 text-teal-300 bg-teal-900/30' : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                  }`}
+                  style={{ fontFamily: f === 'serif' ? 'Georgia, serif' : undefined }}>
+                  {f === 'sans' ? 'Sans-serif' : 'Serif'}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <input type="checkbox" id="showDivider" checked={draft.header.showDivider ?? false}
+                onChange={e => updateDraft({ header: { showDivider: e.target.checked } })}
+                className="accent-teal-500" />
+              <label htmlFor="showDivider" className="text-xs text-slate-300">Show decorative line under title</label>
+            </div>
             <label className="block text-xs text-slate-400 mt-3 mb-1">Position</label>
             <div className="grid grid-cols-3 gap-1">
               {(['top-left','top-center','top-right','bottom-left','bottom-center'] as HeaderPosition[]).map(pos => (
@@ -197,6 +223,9 @@ export function TemplateEditorScreen() {
           {/* Map Colors */}
           <Section title="Map Colors">
             <ColorRow label="Land" value={draft.map.landColor} onChange={v => updateDraft({ map: { landColor: v } })} />
+            <SliderRow label={`Land opacity (${Math.round((draft.map.landOpacity ?? 1) * 100)}%)`}
+              value={draft.map.landOpacity ?? 1} min={0} max={1} step={0.05}
+              onChange={v => updateDraft({ map: { landOpacity: v } })} />
             <ColorRow label="Water" value={draft.map.waterColor} onChange={v => updateDraft({ map: { waterColor: v } })} />
             <ColorRow label="State border" value={draft.map.borderColor} onChange={v => updateDraft({ map: { borderColor: v } })} />
             <ColorRow label="Active state" value={draft.map.activeStateColor} onChange={v => updateDraft({ map: { activeStateColor: v } })} />
@@ -204,6 +233,17 @@ export function TemplateEditorScreen() {
 
           {/* Markers */}
           <Section title="Markers">
+            <label className="block text-xs text-slate-400 mb-1">Shape</label>
+            <div className="flex gap-2 mb-3">
+              {(['circle', 'pin'] as const).map(s => (
+                <button key={s} onClick={() => updateDraft({ markers: { shape: s } })}
+                  className={`flex-1 py-1.5 text-xs rounded border transition-colors capitalize ${
+                    (draft.markers.shape ?? 'circle') === s ? 'border-teal-400 text-teal-300 bg-teal-900/30' : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                  }`}>
+                  {s === 'circle' ? '● Circle' : '📍 Pin'}
+                </button>
+              ))}
+            </div>
             <ColorRow label="Color" value={draft.markers.color} onChange={v => updateDraft({ markers: { color: v } })} />
             <SliderRow label={`Size (${draft.markers.size})`} value={draft.markers.size} min={1} max={10} step={1}
               onChange={v => updateDraft({ markers: { size: v } })} />
@@ -258,12 +298,12 @@ export function TemplateEditorScreen() {
             <input
               type="file"
               accept="image/*"
-              onChange={e => {
+              onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => updateDraft({ branding: { logoDataUrl: ev.target?.result as string, showLogo: true } })
-                reader.readAsDataURL(file)
+                // Logo: smaller max size, higher quality to preserve detail
+                const dataUrl = await compressImage(file, 400, 200, 0.9)
+                updateDraft({ branding: { logoDataUrl: dataUrl, showLogo: true } })
               }}
               className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-slate-700 file:text-slate-300 mb-3"
             />

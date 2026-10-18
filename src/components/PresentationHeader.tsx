@@ -13,20 +13,43 @@ export function PresentationHeader() {
   const { header } = useCurrentTemplate()
   if (!header.showTitle && !header.showSubtitle) return null
 
+  const isSerif = header.fontStyle === 'serif'
+  const isCentered = header.position === 'top-center' || header.position === 'bottom-center'
+
   return (
-    <div className={`absolute z-20 ${POSITION_CLASSES[header.position]}`}>
+    <div className={`absolute z-20 ${POSITION_CLASSES[header.position]}`} style={{ textAlign: isCentered ? 'center' : 'left' }}>
       {header.showTitle && (
         <h1
-          className="text-4xl font-bold leading-tight drop-shadow-lg m-0"
-          style={{ color: header.titleColor }}
+          className="leading-tight drop-shadow-lg m-0"
+          style={{
+            color: header.titleColor,
+            fontFamily: isSerif ? "Georgia, 'Times New Roman', serif" : undefined,
+            fontSize: isSerif ? '3rem' : '2.25rem',
+            fontWeight: 700,
+          }}
         >
           {header.title}
         </h1>
       )}
+      {header.showDivider && header.showTitle && (
+        <div style={{
+          width: 56,
+          height: 2,
+          background: header.subtitleColor,
+          margin: isCentered ? '8px auto 0' : '8px 0 0',
+          borderRadius: 1,
+        }} />
+      )}
       {header.showSubtitle && (
         <p
-          className="text-lg mt-1 drop-shadow-md"
-          style={{ color: header.subtitleColor }}
+          className="drop-shadow-md"
+          style={{
+            color: header.subtitleColor,
+            marginTop: header.showDivider ? 8 : 4,
+            fontSize: isSerif ? '0.85rem' : '1.125rem',
+            letterSpacing: isSerif ? '0.12em' : undefined,
+            textTransform: isSerif ? 'uppercase' : undefined,
+          }}
         >
           {header.subtitle}
         </p>

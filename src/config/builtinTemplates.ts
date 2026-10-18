@@ -40,10 +40,10 @@ export const EVENT_GLOW: Template = {
   statistics: {
     showParticipantCount: true,
     showStateCount: true,
-    textColor: '#94a3b8',
+    textColor: '#f59e0b',
   },
   branding: {
-    logoPosition: 'top-right',
+    logoPosition: 'bottom-right',
     showLogo: false,
   },
 }
@@ -86,10 +86,10 @@ export const EVENING: Template = {
   statistics: {
     showParticipantCount: true,
     showStateCount: true,
-    textColor: '#64748b',
+    textColor: '#818cf8',
   },
   branding: {
-    logoPosition: 'top-right',
+    logoPosition: 'bottom-right',
     showLogo: false,
   },
 }
@@ -132,12 +132,64 @@ export const WARM_WELCOME: Template = {
   statistics: {
     showParticipantCount: true,
     showStateCount: true,
-    textColor: '#fde68a',
+    textColor: '#fbbf24',
   },
   branding: {
-    logoPosition: 'top-right',
+    logoPosition: 'bottom-right',
     showLogo: false,
   },
 }
 
-export const BUILTIN_TEMPLATES: Template[] = [EVENT_GLOW, EVENING, WARM_WELCOME]
+// Designed for use with a custom photo background — transparent map, pin markers, white stats card
+// Also works standalone with the morning-light preset
+export const BRIGHT_DAY: Template = {
+  id: 'bright-day',
+  name: 'Bright Day',
+  isBuiltin: true,
+  createdAt: now,
+  updatedAt: now,
+  background: {
+    type: 'preset',
+    preset: 'morning-light',
+    brightness: 1.0,
+    overlayOpacity: 0.0,
+    overlayColor: '#ffffff',
+  },
+  header: {
+    title: 'Joining Us From Across the U.S.',
+    subtitle: "It's wonderful to have everyone here",
+    showTitle: true,
+    showSubtitle: true,
+    position: 'top-center',
+    titleColor: '#1e3a5f',
+    subtitleColor: '#b45309',
+    fontStyle: 'serif',
+    showDivider: true,
+  },
+  map: {
+    landColor: '#93c5fd',
+    landOpacity: 0.25,
+    borderColor: '#1e3a5f',
+    waterColor: 'transparent',
+    activeStateColor: '#3b82f6',
+  },
+  markers: {
+    color: '#1e3a5f',
+    size: 5,
+    glowIntensity: 0,
+    showLabels: false,
+    animationStyle: 'static',
+    shape: 'pin',
+  },
+  statistics: {
+    showParticipantCount: true,
+    showStateCount: true,
+    textColor: '#f59e0b',
+  },
+  branding: {
+    logoPosition: 'bottom-right',
+    showLogo: false,
+  },
+}
+
+export const BUILTIN_TEMPLATES: Template[] = [EVENT_GLOW, EVENING, WARM_WELCOME, BRIGHT_DAY]

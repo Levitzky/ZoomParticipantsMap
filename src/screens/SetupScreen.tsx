@@ -10,7 +10,9 @@ export function SetupScreen() {
   const setLastUsed = useTemplateStore(s => s.setLastUsed)
   const duplicateTemplate = useTemplateStore(s => s.duplicateTemplate)
   const deleteTemplate = useTemplateStore(s => s.deleteTemplate)
+  const activeMeeting = useMeetingStore(s => s.activeMeeting)
   const startMeeting = useMeetingStore(s => s.startMeeting)
+  const setScreen = useMeetingStore(s => s.setScreen)
   const openTemplateEditor = useMeetingStore(s => s.openTemplateEditor)
 
   const templates = getAllTemplates()
@@ -82,13 +84,30 @@ export function SetupScreen() {
           </div>
         </div>
 
-        {/* Start button */}
-        <button
-          onClick={handleStart}
-          className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-lg shadow-teal-900/30"
-        >
-          Start Meeting →
-        </button>
+        {/* Resume or Start button */}
+        {activeMeeting ? (
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => setScreen('presentation')}
+              className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-lg shadow-teal-900/30"
+            >
+              ▶ Resume "{activeMeeting.name}"
+            </button>
+            <button
+              onClick={handleStart}
+              className="w-full py-2.5 text-sm text-slate-400 hover:text-slate-200 border border-slate-700 hover:border-slate-500 rounded-xl transition-colors"
+            >
+              Start new meeting (ends current)
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleStart}
+            className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-lg shadow-teal-900/30"
+          >
+            Start Meeting →
+          </button>
+        )}
       </div>
     </div>
   )

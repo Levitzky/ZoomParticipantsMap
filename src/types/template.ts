@@ -1,4 +1,4 @@
-export type BackgroundPreset = 'deep-space' | 'navy-night' | 'golden-hour'
+export type BackgroundPreset = 'deep-space' | 'navy-night' | 'golden-hour' | 'morning-light'
 export type HeaderPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center'
 export type AnimationStyle = 'pulse' | 'static' | 'ripple'
 export type LogoPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
@@ -25,9 +25,12 @@ export interface Template {
     position: HeaderPosition
     titleColor: string
     subtitleColor: string
+    fontStyle?: 'sans' | 'serif'
+    showDivider?: boolean
   }
   map: {
     landColor: string
+    landOpacity?: number     // 0–1, default 1
     borderColor: string
     waterColor: string
     activeStateColor: string
@@ -38,6 +41,7 @@ export interface Template {
     glowIntensity: number  // 0–5
     showLabels: boolean
     animationStyle: AnimationStyle
+    shape?: 'circle' | 'pin'
   }
   statistics: {
     showParticipantCount: boolean
