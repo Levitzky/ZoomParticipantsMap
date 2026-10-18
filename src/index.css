@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dynamic theme variables — injected by ThemeProvider */
+:root {
+  --marker-color: #f59e0b;
+  --marker-glow-color: rgba(245, 158, 11, 0.4);
+  --map-land-color: #1e3a5f;
+  --map-water-color: #0f2035;
+  --map-border-color: #2a4f7a;
+  --map-active-color: #0d9488;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
