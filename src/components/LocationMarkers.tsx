@@ -5,17 +5,6 @@ import { useCurrentTemplate } from '@/hooks/useCurrentTemplate'
 import { useMeetingStore } from '@/store/useMeetingStore'
 import type { Participant } from '@/types'
 
-/** SVG path for a map pin (teardrop pointing down). Point at (0,0), circle above.
- *  R = radius of the circle part. Circle center at (0, -R*1.4). */
-function pinPath(R: number) {
-  return [
-    `M 0 0`,
-    `C ${-R * 0.35} ${-R * 0.5} ${-R} ${-R * 0.9} ${-R} ${-R * 1.4}`,
-    `A ${R} ${R} 0 0 0 ${R} ${-R * 1.4}`,
-    `C ${R} ${-R * 0.9} ${R * 0.35} ${-R * 0.5} 0 0`,
-    `Z`,
-  ].join(' ')
-}
 
 interface TooltipState { x: number; y: number; group: Participant[] }
 
