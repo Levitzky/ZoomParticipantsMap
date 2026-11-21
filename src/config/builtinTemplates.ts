@@ -12,7 +12,7 @@ export const EVENT_GLOW: Template = {
     type: 'preset',
     preset: 'deep-space',
     brightness: 1.0,
-    overlayOpacity: 0.25,
+    overlayOpacity: 0.1,
     overlayColor: '#020b18',
   },
   header: {
@@ -25,9 +25,9 @@ export const EVENT_GLOW: Template = {
     subtitleColor: '#f59e0b',
   },
   map: {
-    landColor: '#1e3a5f',
-    borderColor: '#2a4f7a',
-    waterColor: '#0f2035',
+    landColor: '#2a5298',
+    borderColor: '#4a82c4',
+    waterColor: '#152d4a',
     activeStateColor: '#0d9488',
   },
   markers: {

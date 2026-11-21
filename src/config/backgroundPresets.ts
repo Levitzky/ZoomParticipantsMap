@@ -2,7 +2,7 @@ import type { BackgroundPreset } from '@/types'
 
 export const BACKGROUND_GRADIENTS: Record<BackgroundPreset, string> = {
   'deep-space':
-    'radial-gradient(ellipse at 20% 50%, #0f2d52 0%, #020b18 60%, #000510 100%)',
+    'radial-gradient(ellipse at 20% 50%, #1a4a8a 0%, #0d2a52 60%, #071830 100%)',
   'navy-night':
     'linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #061020 100%)',
   'golden-hour':

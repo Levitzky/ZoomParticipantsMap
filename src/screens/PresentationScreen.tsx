@@ -24,7 +24,7 @@ export function PresentationScreen() {
       <PresentationView ref={mapRef} />
 
       {/* Floating participant panel — excluded from PNG export */}
-      <div className="no-export absolute bottom-5 left-5 z-50 w-80 rounded-xl bg-slate-900/90 backdrop-blur-sm shadow-2xl border border-slate-700/50">
+      <div className="no-export absolute bottom-5 left-5 z-50 w-80 rounded-xl bg-slate-600/95 backdrop-blur-sm shadow-2xl border border-slate-500/60">
         {/* Panel header */}
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-700/50">
           <div className="flex items-center gap-2">
