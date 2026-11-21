@@ -12,6 +12,13 @@ export function MapBackground() {
           backgroundPosition: 'center',
           filter: `brightness(${background.brightness})`,
         }
+      : background.type === 'bundled' && background.bundledImageUrl
+      ? {
+          backgroundImage: `url(${background.bundledImageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: `brightness(${background.brightness})`,
+        }
       : {
           backgroundImage: BACKGROUND_GRADIENTS[background.preset],
           filter: `brightness(${background.brightness})`,

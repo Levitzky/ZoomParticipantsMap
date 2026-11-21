@@ -18,10 +18,48 @@ export interface ResolvedLocation {
 
 const cityList = cities as CityRecord[]
 
+// Common nicknames and abbreviations → canonical "City, ST" strings
+const ALIASES: Record<string, string> = {
+  'nyc':             'New York City, NY',
+  'new york':        'New York City, NY',
+  'la':              'Los Angeles, CA',
+  'san fran':        'San Francisco, CA',
+  'frisco':          'San Francisco, CA',
+  'sf':              'San Francisco, CA',
+  'dc':              'Washington, DC',
+  'washington dc':   'Washington, DC',
+  'philly':          'Philadelphia, PA',
+  'chi':             'Chicago, IL',
+  'chitown':         'Chicago, IL',
+  'chi-town':        'Chicago, IL',
+  'vegas':           'Las Vegas, NV',
+  'nola':            'New Orleans, LA',
+  'beantown':        'Boston, MA',
+  'the big apple':   'New York City, NY',
+  'big apple':       'New York City, NY',
+  'nashvegas':       'Nashville, TN',
+  'h-town':          'Houston, TX',
+  'htx':             'Houston, TX',
+  'atl':             'Atlanta, GA',
+  'pdx':             'Portland, OR',
+  'msp':             'Minneapolis, MN',
+  'dfw':             'Dallas, TX',
+  'kcmo':            'Kansas City, MO',
+  'stl':             'St. Louis, MO',
+}
+
 // Build Fuse index once at module load
 const fuse = new Fuse(cityList, {
   keys: ['city'],
-  threshold: 0.35,
+  threshold: 0.42,
+  includeScore: true,
+  minMatchCharLength: 2,
+})
+
+// Loose Fuse instance used only for "Did you mean?" suggestions
+const fuseSuggest = new Fuse(cityList, {
+  keys: ['city'],
+  threshold: 0.6,
   includeScore: true,
   minMatchCharLength: 2,
 })
@@ -39,6 +77,10 @@ const fuse = new Fuse(cityList, {
 export function resolveLocation(input: string): ResolvedLocation | null {
   const trimmed = input.trim()
   if (!trimmed) return null
+
+  // 0. Alias / nickname lookup
+  const aliasMatch = ALIASES[trimmed.toLowerCase()]
+  if (aliasMatch) return resolveLocation(aliasMatch)
 
   // 1. "City, ST" — split on last comma
   const commaIdx = trimmed.lastIndexOf(',')
@@ -104,12 +146,28 @@ export function resolveLocation(input: string): ResolvedLocation | null {
   // 6. Fuzzy city name match (full input or city part)
   const cityQuery = commaIdx > 0 ? trimmed.slice(0, commaIdx).trim() : trimmed
   const results = fuse.search(cityQuery)
-  if (results.length > 0 && (results[0].score ?? 1) < 0.35) {
+  if (results.length > 0 && (results[0].score ?? 1) < 0.42) {
     const match = results[0].item
     return { lat: match.lat, lng: match.lng, state: match.state_id, canonicalName: `${match.city}, ${match.state_id}` }
   }
 
   return null
+}
+
+/** Returns up to 5 loose fuzzy matches for "Did you mean?" UI hints.
+ *  Only call this after resolveLocation() has already returned null. */
+export function suggestLocations(input: string): ResolvedLocation[] {
+  const trimmed = input.trim()
+  if (!trimmed) return []
+  const cityQuery = trimmed.lastIndexOf(',') > 0
+    ? trimmed.slice(0, trimmed.lastIndexOf(',')).trim()
+    : trimmed
+  return fuseSuggest.search(cityQuery, { limit: 5 }).map(r => ({
+    lat: r.item.lat,
+    lng: r.item.lng,
+    state: r.item.state_id,
+    canonicalName: `${r.item.city}, ${r.item.state_id}`,
+  }))
 }
 
 function fuseSearchInState(cityQuery: string, stateAbbr: string): ResolvedLocation | null {

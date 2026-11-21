@@ -76,6 +76,13 @@ export function PresentationScreen() {
             />
             <input
               type="text"
+              value={meeting.template.header.date ?? ''}
+              onChange={e => patchMeetingTemplate({ header: { ...meeting.template.header, date: e.target.value || undefined } })}
+              placeholder="Date (e.g. November 21, 2026)"
+              className="w-full bg-slate-800 border border-slate-600/50 rounded px-2 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50"
+            />
+            <input
+              type="text"
               value={meeting.template.header.subtitle}
               onChange={e => patchMeetingTemplate({ header: { ...meeting.template.header, subtitle: e.target.value } })}
               placeholder="Subtitle"

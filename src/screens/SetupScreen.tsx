@@ -1,94 +1,155 @@
 import { useState } from 'react'
-import { useTemplateStore } from '@/store/useTemplateStore'
 import { useMeetingStore } from '@/store/useMeetingStore'
-import { BACKGROUND_GRADIENTS } from '@/config/backgroundPresets'
-import type { Template } from '@/types'
+import { EVENT_GLOW } from '@/config/builtinTemplates'
+import { compressImage } from '@/utils/compressImage'
+
+const BUBBLE_COLORS = [
+  { label: 'Amber',  value: '#f59e0b' },
+  { label: 'Teal',   value: '#14b8a6' },
+  { label: 'Blue',   value: '#3b82f6' },
+  { label: 'Rose',   value: '#f43f5e' },
+  { label: 'Purple', value: '#a78bfa' },
+  { label: 'White',  value: '#e2e8f0' },
+]
 
 export function SetupScreen() {
-  const getAllTemplates = useTemplateStore(s => s.getAllTemplates)
-  const lastUsedId = useTemplateStore(s => s.lastUsedTemplateId)
-  const setLastUsed = useTemplateStore(s => s.setLastUsed)
-  const duplicateTemplate = useTemplateStore(s => s.duplicateTemplate)
-  const deleteTemplate = useTemplateStore(s => s.deleteTemplate)
-  const activeMeeting = useMeetingStore(s => s.activeMeeting)
-  const startMeeting = useMeetingStore(s => s.startMeeting)
-  const setScreen = useMeetingStore(s => s.setScreen)
-  const openTemplateEditor = useMeetingStore(s => s.openTemplateEditor)
+  const activeMeeting        = useMeetingStore(s => s.activeMeeting)
+  const startMeeting         = useMeetingStore(s => s.startMeeting)
+  const setScreen            = useMeetingStore(s => s.setScreen)
+  const patchMeetingTemplate = useMeetingStore(s => s.patchMeetingTemplate)
 
-  const templates = getAllTemplates()
-  const [selectedId, setSelectedId] = useState(lastUsedId)
-  const [meetingName, setMeetingName] = useState('')
+  // Pre-populate from active meeting when returning to setup
+  const [eventName,   setEventName]   = useState(activeMeeting?.template.header.title ?? '')
+  const [eventDate,   setEventDate]   = useState(activeMeeting?.template.header.date ?? '')
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(activeMeeting?.template.branding.logoDataUrl ?? null)
+  const [bubbleColor, setBubbleColor] = useState(activeMeeting?.template.markers.color ?? '#f59e0b')
 
-  const selectedTemplate = templates.find(t => t.id === selectedId) ?? templates[0]
-
-  function handleStart() {
-    if (!selectedTemplate) return
-    const name = meetingName.trim() || `Meeting – ${new Date().toLocaleDateString()}`
-    setLastUsed(selectedId)
-    startMeeting(name, selectedTemplate)
+  function handleResume() {
+    // Apply any edits made on the setup screen back to the active meeting
+    patchMeetingTemplate({
+      header: {
+        ...activeMeeting!.template.header,
+        title: eventName.trim() || activeMeeting!.name,
+        date: eventDate.trim() || undefined,
+      },
+      markers: { ...activeMeeting!.template.markers, color: bubbleColor },
+      branding: {
+        ...activeMeeting!.template.branding,
+        logoDataUrl: logoDataUrl ?? undefined,
+        showLogo: !!logoDataUrl,
+      },
+    })
+    setScreen('presentation')
   }
 
-  function handleNewTemplate() {
-    const newId = duplicateTemplate('event-glow')?.id
-    if (newId) openTemplateEditor(newId)
+  function handleStart() {
+    const name = eventName.trim() || 'Meeting'
+    const template = {
+      ...EVENT_GLOW,
+      header: {
+        ...EVENT_GLOW.header,
+        title: name,
+        date: eventDate.trim() || undefined,
+      },
+      markers: {
+        ...EVENT_GLOW.markers,
+        color: bubbleColor,
+      },
+      branding: {
+        ...EVENT_GLOW.branding,
+        logoDataUrl: logoDataUrl ?? undefined,
+        showLogo: !!logoDataUrl,
+      },
+    }
+    startMeeting(name, template)
   }
 
   return (
     <div className="w-full h-full flex items-center justify-center"
          style={{ background: 'radial-gradient(ellipse at 20% 50%, #0f2d52 0%, #020b18 60%, #000510 100%)' }}>
-      <div className="w-full max-w-2xl px-6">
-        {/* Header */}
+      <div className="w-full max-w-md px-6">
+
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-white mb-2">ParticipantsMap</h1>
-          <p className="text-slate-400">Start a new meeting</p>
+          <p className="text-slate-400">Set up your event</p>
         </div>
 
-        {/* Meeting name */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Meeting name
-          </label>
+        {/* Event name */}
+        <div className="mb-5">
+          <label className="block text-sm font-medium text-slate-300 mb-2">Event name</label>
           <input
             type="text"
-            placeholder={`Meeting – ${new Date().toLocaleDateString()}`}
-            value={meetingName}
-            onChange={e => setMeetingName(e.target.value)}
+            placeholder="e.g. Annual Summit"
+            value={eventName}
+            onChange={e => setEventName(e.target.value)}
             className="w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/70 transition-colors"
           />
         </div>
 
-        {/* Template picker */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-300 mb-3">
-            Choose a template
+        {/* Event date */}
+        <div className="mb-5">
+          <label className="block text-sm font-medium text-slate-300 mb-2">Date <span className="text-slate-500 font-normal">(optional)</span></label>
+          <input
+            type="text"
+            placeholder="e.g. November 21, 2026"
+            value={eventDate}
+            onChange={e => setEventDate(e.target.value)}
+            className="w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/70 transition-colors"
+          />
+        </div>
+
+        {/* Logo upload */}
+        <div className="mb-5">
+          <label className="block text-sm font-medium text-slate-300 mb-2">Logo <span className="text-slate-500 font-normal">(optional)</span></label>
+          <label className="flex items-center gap-3 w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 cursor-pointer hover:border-slate-500 transition-colors">
+            {logoDataUrl
+              ? <img src={logoDataUrl} alt="Logo preview" className="h-8 max-w-[120px] object-contain" />
+              : <span className="text-slate-400 text-sm">Click to upload</span>
+            }
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const dataUrl = await compressImage(file, 400, 200, 0.9)
+                setLogoDataUrl(dataUrl)
+              }}
+            />
+            {logoDataUrl && (
+              <button
+                type="button"
+                onClick={e => { e.preventDefault(); setLogoDataUrl(null) }}
+                className="ml-auto text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >✕ Remove</button>
+            )}
           </label>
-          <div className="grid grid-cols-3 gap-3">
-            {templates.map(t => (
-              <TemplateCard
-                key={t.id}
-                template={t}
-                selected={t.id === selectedId}
-                onSelect={() => setSelectedId(t.id)}
-                onEdit={() => openTemplateEditor(t.id)}
-                onDelete={!t.isBuiltin ? () => { deleteTemplate(t.id); if (selectedId === t.id) setSelectedId('event-glow') } : undefined}
+        </div>
+
+        {/* Bubble color */}
+        <div className="mb-8">
+          <label className="block text-sm font-medium text-slate-300 mb-3">Bubble color</label>
+          <div className="flex gap-3">
+            {BUBBLE_COLORS.map(c => (
+              <button
+                key={c.value}
+                onClick={() => setBubbleColor(c.value)}
+                title={c.label}
+                className={`w-8 h-8 rounded-full border-2 transition-all ${
+                  bubbleColor === c.value ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-70 hover:opacity-100'
+                }`}
+                style={{ background: c.value }}
               />
             ))}
-            {/* New template card */}
-            <button
-              onClick={handleNewTemplate}
-              className="aspect-video rounded-xl border-2 border-dashed border-slate-600/50 hover:border-teal-500/50 text-slate-500 hover:text-teal-400 flex flex-col items-center justify-center gap-1 transition-colors"
-            >
-              <span className="text-2xl">+</span>
-              <span className="text-xs">New Template</span>
-            </button>
           </div>
         </div>
 
-        {/* Resume or Start button */}
+        {/* Resume or Start */}
         {activeMeeting ? (
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => setScreen('presentation')}
+              onClick={handleResume}
               className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-lg shadow-teal-900/30"
             >
               ▶ Resume "{activeMeeting.name}"
@@ -97,7 +158,7 @@ export function SetupScreen() {
               onClick={handleStart}
               className="w-full py-2.5 text-sm text-slate-400 hover:text-slate-200 border border-slate-700 hover:border-slate-500 rounded-xl transition-colors"
             >
-              Start new meeting (ends current)
+              Start new event (ends current)
             </button>
           </div>
         ) : (
@@ -105,75 +166,10 @@ export function SetupScreen() {
             onClick={handleStart}
             className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-lg rounded-xl transition-colors shadow-lg shadow-teal-900/30"
           >
-            Start Meeting →
+            Start Event →
           </button>
         )}
       </div>
-    </div>
-  )
-}
-
-interface TemplateCardProps {
-  template: Template
-  selected: boolean
-  onSelect: () => void
-  onEdit: () => void
-  onDelete?: () => void
-}
-
-function TemplateCard({ template, selected, onSelect, onEdit, onDelete }: TemplateCardProps) {
-  const bg =
-    template.background.type === 'custom' && template.background.customImageDataUrl
-      ? { backgroundImage: `url(${template.background.customImageDataUrl})`, backgroundSize: 'cover' }
-      : { backgroundImage: BACKGROUND_GRADIENTS[template.background.preset] }
-
-  return (
-    <div
-      onClick={onSelect}
-      className={`relative aspect-video rounded-xl overflow-hidden cursor-pointer border-2 transition-all group ${
-        selected ? 'border-teal-400 shadow-lg shadow-teal-900/40' : 'border-slate-700/50 hover:border-slate-500'
-      }`}
-    >
-      {/* Preview swatch */}
-      <div className="absolute inset-0" style={bg} />
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Mini map color hint */}
-        <div
-          className="w-3/4 h-1/2 rounded opacity-60"
-          style={{ backgroundColor: template.map.landColor }}
-        />
-      </div>
-
-      {/* Name label */}
-      <div className="absolute bottom-0 inset-x-0 bg-black/50 px-2 py-1">
-        <p className="text-xs text-white truncate">{template.name}</p>
-      </div>
-
-      {/* Action buttons on hover */}
-      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={e => { e.stopPropagation(); onEdit() }}
-          className="w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs flex items-center justify-center"
-          title="Edit template"
-        >
-          ✎
-        </button>
-        {onDelete && (
-          <button
-            onClick={e => { e.stopPropagation(); onDelete() }}
-            className="w-6 h-6 bg-black/60 hover:bg-red-800/80 text-white rounded text-xs flex items-center justify-center"
-            title="Delete template"
-          >
-            ×
-          </button>
-        )}
-      </div>
-
-      {selected && (
-        <div className="absolute top-1 left-1 w-4 h-4 bg-teal-400 rounded-full flex items-center justify-center">
-          <span className="text-slate-900 text-xs">✓</span>
-        </div>
-      )}
     </div>
   )
 }

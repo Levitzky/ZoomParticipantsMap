@@ -9,6 +9,7 @@ interface USMapProps {
 
 export function USMap({ children }: USMapProps) {
   const { map } = useCurrentTemplate()
+  const hasTerrain = Boolean(map.terrainImageUrl)
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -18,23 +19,50 @@ export function USMap({ children }: USMapProps) {
         projectionConfig={{ scale: 1000 }}
       >
         <Geographies geography={geoData}>
-          {({ geographies }) =>
-            geographies.map(geo => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill={map.landColor}
-                fillOpacity={map.landOpacity ?? 1}
-                stroke={map.borderColor}
-                strokeWidth={0.5}
-                style={{
-                  default: { outline: 'none', cursor: 'default' },
-                  hover: { outline: 'none', fill: map.landColor, fillOpacity: map.landOpacity ?? 1 },
-                  pressed: { outline: 'none' },
-                }}
-              />
-            ))
-          }
+          {({ geographies }) => (
+            <>
+              {hasTerrain && (
+                <defs>
+                  <clipPath id="us-terrain-clip">
+                    {geographies.map(geo => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        style={{ default: { outline: 'none' }, hover: { outline: 'none' }, pressed: { outline: 'none' } }}
+                      />
+                    ))}
+                  </clipPath>
+                </defs>
+              )}
+
+              {hasTerrain && (
+                <image
+                  href={map.terrainImageUrl}
+                  x="-10%" y="-10%"
+                  width="120%" height="120%"
+                  clipPath="url(#us-terrain-clip)"
+                  preserveAspectRatio="xMidYMid slice"
+                  style={{ pointerEvents: 'none' }}
+                />
+              )}
+
+              {geographies.map(geo => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={hasTerrain ? 'transparent' : map.landColor}
+                  fillOpacity={hasTerrain ? 0 : (map.landOpacity ?? 1)}
+                  stroke={map.borderColor}
+                  strokeWidth={0.5}
+                  style={{
+                    default: { outline: 'none', cursor: 'default' },
+                    hover: { outline: 'none', fill: hasTerrain ? 'transparent' : map.landColor, fillOpacity: hasTerrain ? 0 : (map.landOpacity ?? 1) },
+                    pressed: { outline: 'none' },
+                  }}
+                />
+              ))}
+            </>
+          )}
         </Geographies>
         {children}
       </ComposableMap>

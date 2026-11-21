@@ -20,7 +20,7 @@ export function PresentationHeader() {
     <div className={`absolute z-20 ${POSITION_CLASSES[header.position]}`} style={{ textAlign: isCentered ? 'center' : 'left' }}>
       {header.showTitle && (
         <h1
-          className="leading-tight drop-shadow-lg m-0"
+          className="leading-tight drop-shadow-lg m-0 flex items-baseline gap-3 flex-wrap"
           style={{
             color: header.titleColor,
             fontFamily: isSerif ? "Georgia, 'Times New Roman', serif" : undefined,
@@ -29,6 +29,16 @@ export function PresentationHeader() {
           }}
         >
           {header.title}
+          {header.date && (
+            <span style={{
+              fontSize: isSerif ? '1.1rem' : '1rem',
+              fontWeight: 400,
+              opacity: 0.65,
+              letterSpacing: '0.01em',
+            }}>
+              {header.date}
+            </span>
+          )}
         </h1>
       )}
       {header.showDivider && header.showTitle && (

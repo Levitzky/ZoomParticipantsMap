@@ -10,9 +10,10 @@ export interface Template {
   createdAt: number
   updatedAt: number
   background: {
-    type: 'preset' | 'custom'
+    type: 'preset' | 'custom' | 'bundled'
     preset: BackgroundPreset
     customImageDataUrl?: string
+    bundledImageUrl?: string    // path to a file in /public/assets/
     brightness: number      // 0–1
     overlayOpacity: number  // 0–1
     overlayColor: string
@@ -20,6 +21,7 @@ export interface Template {
   header: {
     title: string
     subtitle: string
+    date?: string
     showTitle: boolean
     showSubtitle: boolean
     position: HeaderPosition
@@ -34,6 +36,7 @@ export interface Template {
     borderColor: string
     waterColor: string
     activeStateColor: string
+    terrainImageUrl?: string  // when set, clips this image to the US shape
   }
   markers: {
     color: string

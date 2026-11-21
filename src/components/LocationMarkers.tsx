@@ -49,9 +49,22 @@ export function LocationMarkers() {
       {[...groups.values()].map(group => {
         const first = group[0]
         const count = group.length
-        const radius = Math.max(baseRadius, count > 9 ? 13 : 10)
-        const fontSize = Math.round(radius * 0.9)
-        const circleCy = isPin ? -radius * 1.4 : 0
+        const baseR = Math.max(baseRadius, count > 9 ? 13 : 10)
+        const circleCy = isPin ? -baseR * 1.4 : 0
+
+        // Pill dimensions based on city name
+        const cityName = first.location.split(',')[0].trim()
+        const mainFs = Math.max(9, Math.min(13, baseR * 1.0))
+        const countFs = mainFs * 0.75
+        const mainTextW = cityName.length * mainFs * 0.58
+        const countGap = 4
+        const countTextW = `(${count})`.length * countFs * 0.58 + countGap
+        const totalTextW = mainTextW + countTextW
+        const padX = 8, padY = 5
+        const pillW = Math.max(totalTextW + padX * 2, baseR * 2)
+        const pillH = mainFs + padY * 2
+        const pillX = -pillW / 2
+        const pillY = circleCy - pillH / 2
 
         return (
           <Marker key={`${first.lat},${first.lng}`} coordinates={[first.lng, first.lat]}>
@@ -63,9 +76,9 @@ export function LocationMarkers() {
             >
               {/* Glow */}
               {markers.glowIntensity > 0 && (
-                <circle
+                <ellipse
                   cx={0} cy={circleCy}
-                  r={radius + glowBlur / 2}
+                  rx={pillW / 2 + glowBlur / 2} ry={pillH / 2 + glowBlur / 2}
                   fill={markers.color}
                   fillOpacity={0.18}
                   stroke="none"
@@ -73,45 +86,43 @@ export function LocationMarkers() {
                 />
               )}
 
-              {isPin ? (
-                // ── Pin (teardrop) shape ────────────────────────────
-                <g className={animClass}>
-                  <path
-                    d={pinPath(radius)}
+              <g className={animClass}>
+                {/* Pin tail */}
+                {isPin && (
+                  <polygon
+                    points={`${-pillW * 0.12},${circleCy + pillH / 2} ${pillW * 0.12},${circleCy + pillH / 2} 0,0`}
                     fill={markers.color}
-                    stroke="rgba(255,255,255,0.35)"
-                    strokeWidth={1}
                   />
-                  <circle cx={0} cy={circleCy} r={radius * 0.55} fill="rgba(255,255,255,0.2)" />
-                  <text
-                    x={0} y={circleCy}
-                    textAnchor="middle" dy="0.35em"
-                    fontSize={fontSize} fontWeight="700" fill="#fff"
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                  >{count}</text>
-                </g>
-              ) : (
-                // ── Circle shape ────────────────────────────────────
-                <>
-                  <circle
-                    r={radius}
-                    fill={markers.color}
-                    stroke="rgba(255,255,255,0.3)"
-                    strokeWidth={1}
-                    className={animClass}
-                  />
-                  <text
-                    textAnchor="middle" dy="0.35em"
-                    fontSize={fontSize} fontWeight="700" fill="#fff"
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                  >{count}</text>
-                </>
-              )}
+                )}
+                {/* Pill background */}
+                <rect
+                  x={pillX} y={pillY}
+                  width={pillW} height={pillH}
+                  rx={pillH / 2}
+                  fill={markers.color}
+                  stroke="rgba(255,255,255,0.3)"
+                  strokeWidth={1}
+                />
+                {/* City name */}
+                <text
+                  x={-totalTextW / 2} y={circleCy}
+                  textAnchor="start" dy="0.35em"
+                  fontSize={mainFs} fontWeight="600" fill="#fff"
+                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+                >{cityName}</text>
+                {/* Count in small text */}
+                <text
+                  x={-totalTextW / 2 + mainTextW + countGap} y={circleCy}
+                  textAnchor="start" dy="0.35em"
+                  fontSize={countFs} fontWeight="400" fill="rgba(255,255,255,0.8)"
+                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+                >({count})</text>
+              </g>
 
               {markers.showLabels && (
                 <text
                   textAnchor="middle"
-                  y={isPin ? circleCy - radius - 6 : -(radius + 6)}
+                  y={pillY - 4}
                   fontSize={10} fill={markers.color}
                   style={{ pointerEvents: 'none', userSelect: 'none' }}
                 >{first.location}</text>
