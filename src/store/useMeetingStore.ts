@@ -64,7 +64,7 @@ export const useMeetingStore = create<MeetingState>()((set) => ({
     const participant: Participant = {
       id: crypto.randomUUID(),
       name: name?.trim() || resolved.canonicalName,
-      location,
+      location: resolved.canonicalName,
       lat: resolved.lat,
       lng: resolved.lng,
       state: resolved.state,
