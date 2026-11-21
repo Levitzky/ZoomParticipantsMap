@@ -66,7 +66,7 @@ export function SetupScreen() {
 
   return (
     <div className="w-full h-full flex items-center justify-center"
-         style={{ background: 'radial-gradient(ellipse at 20% 50%, #0f2d52 0%, #020b18 60%, #000510 100%)' }}>
+         style={{ background: 'radial-gradient(ellipse at 20% 50%, #1a4a8a 0%, #0d2a52 60%, #071830 100%)' }}>
       <div className="w-full max-w-md px-6">
 
         <div className="mb-8 text-center">

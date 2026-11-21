@@ -26,24 +26,24 @@ export function PresentationScreen() {
       {/* Floating participant panel — excluded from PNG export */}
       <div className="no-export absolute bottom-5 left-5 z-50 w-80 rounded-xl bg-slate-600/95 backdrop-blur-sm shadow-2xl border border-slate-500/60">
         {/* Panel header */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-700/50">
+        <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/20">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setScreen('setup')}
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-xs text-slate-200 hover:text-white transition-colors"
               title="Back to setup"
             >
               ← Setup
             </button>
-            <span className="text-slate-700">|</span>
-            <span className="text-sm font-medium text-slate-300">
+            <span className="text-slate-400">|</span>
+            <span className="text-sm font-medium text-white">
               Participants ({meeting.participants.length})
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowTitleEdit(v => !v)}
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-xs text-slate-200 hover:text-white transition-colors"
               title="Edit title"
             >
               ✎
@@ -51,7 +51,7 @@ export function PresentationScreen() {
             <button
               onClick={() => setPanelMinimized(v => !v)}
               aria-label={panelMinimized ? 'Expand panel' : 'Minimize panel'}
-              className="text-slate-500 hover:text-slate-300 transition-colors text-lg leading-none w-5 text-center"
+              className="text-slate-200 hover:text-white transition-colors text-lg leading-none w-5 text-center"
             >
               {panelMinimized ? '+' : '−'}
             </button>
@@ -66,7 +66,7 @@ export function PresentationScreen() {
 
         {/* Title / Logo editor (collapsible) */}
         {showTitleEdit && (
-          <div className="px-3 py-2.5 border-b border-slate-700/50 flex flex-col gap-2">
+          <div className="px-3 py-2.5 border-b border-white/20 flex flex-col gap-2">
             <input
               type="text"
               value={meeting.template.header.title}
@@ -89,7 +89,7 @@ export function PresentationScreen() {
               className="w-full bg-slate-800 border border-slate-600/50 rounded px-2 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50"
             />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 w-8">Logo</span>
+              <span className="text-xs text-slate-200 w-8">Logo</span>
               <label className="flex-1 py-1 px-2 rounded bg-slate-800 border border-slate-600/50 text-xs text-slate-400 cursor-pointer hover:border-slate-500 text-center">
                 {meeting.template.branding.logoDataUrl ? 'Change logo' : 'Upload logo'}
                 <input

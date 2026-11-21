@@ -51,7 +51,7 @@ const ALIASES: Record<string, string> = {
 // Build Fuse index once at module load
 const fuse = new Fuse(cityList, {
   keys: ['city'],
-  threshold: 0.42,
+  threshold: 0.3,
   includeScore: true,
   minMatchCharLength: 2,
 })
@@ -146,7 +146,7 @@ export function resolveLocation(input: string): ResolvedLocation | null {
   // 6. Fuzzy city name match (full input or city part)
   const cityQuery = commaIdx > 0 ? trimmed.slice(0, commaIdx).trim() : trimmed
   const results = fuse.search(cityQuery)
-  if (results.length > 0 && (results[0].score ?? 1) < 0.42) {
+  if (results.length > 0 && (results[0].score ?? 1) < 0.3) {
     const match = results[0].item
     return { lat: match.lat, lng: match.lng, state: match.state_id, canonicalName: `${match.city}, ${match.state_id}` }
   }
@@ -173,7 +173,7 @@ export function suggestLocations(input: string): ResolvedLocation[] {
 function fuseSearchInState(cityQuery: string, stateAbbr: string): ResolvedLocation | null {
   const stateResults = fuse.search(cityQuery)
   const inState = stateResults.find(r => r.item.state_id === stateAbbr)
-  if (inState && (inState.score ?? 1) < 0.4) {
+  if (inState && (inState.score ?? 1) < 0.3) {
     const m = inState.item
     return { lat: m.lat, lng: m.lng, state: m.state_id, canonicalName: `${m.city}, ${m.state_id}` }
   }

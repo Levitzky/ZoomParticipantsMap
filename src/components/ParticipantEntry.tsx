@@ -36,7 +36,7 @@ export function ParticipantEntry() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 border-b border-slate-700/50">
+    <form onSubmit={handleSubmit} className="p-3 border-b border-white/20">
       <div className="flex flex-col gap-2">
         <input
           type="text"
@@ -66,7 +66,7 @@ export function ParticipantEntry() {
 
         {suggestions.length > 0 && (
           <div className="flex flex-col gap-1.5">
-            <p className="text-xs text-slate-400">Did you mean?</p>
+            <p className="text-xs text-slate-200">Did you mean?</p>
             <div className="flex flex-wrap gap-1">
               {suggestions.map(s => (
                 <button
